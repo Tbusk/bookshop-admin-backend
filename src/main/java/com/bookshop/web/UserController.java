@@ -2,7 +2,11 @@ package com.bookshop.web;
 
 import com.bookshop.domain.User;
 import com.bookshop.domain.UserRepository;
+import com.bookshop.util.APIUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -15,21 +19,33 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private APIUtil apiUtil;
+
     @GetMapping(value = "/list", produces = "application/json")
-    public Iterable<User> getUsers() {
-        return userRepository.findAll();
+    public ResponseEntity<?> getUsers() {
+        try {
+            return ResponseEntity.ok().body(userRepository.findAll());
+        }
+        catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiUtil.buildResponse("There was an issue finding users"));
+        }
     }
 
     @GetMapping(value = "/{id}", produces = "application/json")
-    public User getUser(@PathVariable Long id) {
-        return userRepository.findById(id).orElse(null);
+    public ResponseEntity<?> getUser(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok().body(userRepository.findById(id).get());
+        } catch (Exception exception) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiUtil.buildResponse("User not found"));
+        }
     }
 
     @PostMapping(value = "", consumes = "application/json", produces = "application/json")
-    public String addUser(@RequestBody Map<String, String> userMap) {
+    public ResponseEntity<String> addUser(@RequestBody Map<String, String> userMap) {
 
         if(userRepository.findByUsername(userMap.get("username")).isPresent()) {
-            return "Username taken. Please choose another username";
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiUtil.buildResponse("Username taken. Please choose another username").toString());
         }
 
         User user = new User();
@@ -38,7 +54,7 @@ public class UserController {
             user.setUsername(userMap.get("username"));
             user.setPassword(userMap.get("password"));
         } catch (Exception e) {
-            return "Username and password are required";
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiUtil.buildResponse("Username and password are required").toString());
         }
 
         // Setting optional fields
@@ -50,17 +66,17 @@ public class UserController {
         user.setRole(userMap.getOrDefault("role", "USER"));
 
         userRepository.save(user);
-        return "User added";
+        return ResponseEntity.ok().body(apiUtil.buildResponse("User added").toString());
     }
 
     @PutMapping(value = "/{id}", consumes = "application/json", produces = "application/json")
-    public String updateUser(@PathVariable Long id, @RequestBody Map<String, String> userMap) {
+    public ResponseEntity<String> updateUser(@PathVariable Long id, @RequestBody Map<String, String> userMap) {
 
         User user = userRepository.findById(id).isPresent() ? userRepository.findById(id).get() : null;
 
         // Checking if user exists
         if(user == null) {
-            return "User not found";
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiUtil.buildResponse("User not found").toString());
         }
 
         // Updating user fields
@@ -73,16 +89,16 @@ public class UserController {
         user.setProfilePicture(userMap.getOrDefault("profilePicture", user.getProfilePicture()));
 
         userRepository.save(user);
-        return "User updated";
+        return ResponseEntity.ok().body(apiUtil.buildResponse("User updated").toString());
     }
 
     @DeleteMapping(value = "/{id}", produces = "application/json")
-    public String deleteUser(@PathVariable Long id) {
+    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
         if(userRepository.findById(id).isEmpty()) {
-            return "User not found";
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiUtil.buildResponse("User not found").toString());
         }
         userRepository.deleteById(id);
-        return "User deleted";
+        return ResponseEntity.ok().body(apiUtil.buildResponse("User deleted").toString());
     }
 }
 

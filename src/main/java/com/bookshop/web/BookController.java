@@ -3,7 +3,9 @@ package com.bookshop.web;
 import com.bookshop.domain.Book;
 import com.bookshop.domain.BookRepository;
 
+import com.bookshop.util.APIUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,28 +22,31 @@ public class BookController {
     @Autowired
     private BookRepository repository;
 
+    @Autowired
+    private APIUtil apiUtil;
+
     @GetMapping(value = "/list", produces = "application/json")
     public List<Book> getBooks() {
         return repository.findAll();
     }
 
     @GetMapping(value = "/{id}", produces = "application/json")
-    public ResponseEntity<Book> getBook(@PathVariable Long id) {
+    public ResponseEntity<?> getBook(@PathVariable Long id) {
 
         Book book = repository.findById(id).orElse(null);
         if(book == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            return new ResponseEntity<>(apiUtil.buildResponse("Book not found."), HttpStatus.BAD_REQUEST);
         }
         return ResponseEntity.status(HttpStatus.OK).body(book);
     }
 
     @PostMapping(value = "", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<List<String>> addBook(@RequestBody Map<String, String> bookMap) {
+    public ResponseEntity<String> addBook(@RequestBody Map<String, String> bookMap) {
         Book book = new Book();
 
         // Checking if book already exists
         if((!bookMap.get("isbn10").isEmpty() && repository.findByIsbn10(bookMap.get("isbn10")).isPresent()) || (!bookMap.get("isbn13").isEmpty() && repository.findByIsbn13(bookMap.get("isbn13")).isPresent())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(List.of("Book already exists"));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiUtil.buildResponse("Book already exists.").toString());
         }
 
         // Setting required fields
@@ -54,7 +59,7 @@ public class BookController {
             book.setPageCount(Short.parseShort(bookMap.get("pageCount")));
             book.setDescription(bookMap.get("description"));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(List.of("Title, author, publisher, release date, genre, description, and page count are all required"));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiUtil.buildResponse("Title, author, publisher, release date, genre, description, and page count are all required").toString());
         }
 
         // Setting optional fields
@@ -71,20 +76,20 @@ public class BookController {
 
         // Ensuring Price is set for at least one format
         if(book.getEbookPrice() == null && book.getAudiobookPrice() == null && book.getHardcoverPrice() == null && book.getPaperbackPrice() == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(List.of("Price of at least one format is required."));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiUtil.buildResponse("Price of at least one format is required.").toString());
         }
 
         repository.save(book);
-        return ResponseEntity.status(HttpStatus.OK).body(List.of("Book added."));
+        return ResponseEntity.status(HttpStatus.OK).body(apiUtil.buildResponse("Book added.").toString());
     }
 
     @PutMapping(value = "/{id}", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<List<String>> updateBook(@PathVariable Long id, @RequestBody Map<String, String> bookMap) {
+    public ResponseEntity<String> updateBook(@PathVariable Long id, @RequestBody Map<String, String> bookMap) {
         Book book = repository.findById(id).isPresent() ? repository.findById(id).get() : null;
 
         // Checking if book exists
         if(book == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(List.of("Book not found"));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiUtil.buildResponse("Book not found").toString());
         }
 
         // Updating fields
@@ -107,15 +112,15 @@ public class BookController {
         book.setRatingsCount((bookMap.get("ratingsCount") != null && !bookMap.get("ratingsCount").isEmpty()) ? Integer.parseInt(bookMap.get("ratingsCount")) : book.getRatingsCount());
 
         repository.save(book);
-        return ResponseEntity.status(HttpStatus.OK).body(List.of("Book updated"));
+        return ResponseEntity.status(HttpStatus.OK).body(apiUtil.buildResponse("Book updated").toString());
     }
 
     @DeleteMapping(value = "/{id}", produces = "application/json")
-    public ResponseEntity<List<String>> deleteBook(@PathVariable Long id) {
+    public ResponseEntity<String> deleteBook(@PathVariable Long id) {
         if(repository.findById(id).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(List.of("Book Not Found"));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiUtil.buildResponse("Book Not Found").toString());
         }
         repository.deleteById(id);
-        return ResponseEntity.status(HttpStatus.OK).body(List.of("Book deleted"));
+        return ResponseEntity.status(HttpStatus.OK).body(apiUtil.buildResponse("Book deleted").toString());
     }
 }
