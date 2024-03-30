@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.sql.Date;
+import java.sql.Timestamp;
 
 @Entity
 @Getter
@@ -41,7 +41,7 @@ public class Book {
     @Column(nullable = false, length = 128)
     private String publisher;
 
-    @Column(nullable = false, length = 128)
+    @Column(nullable = false, length = 512)
     private String image;
 
     @Column(nullable = false, length = 32)
@@ -50,8 +50,8 @@ public class Book {
     @Column(nullable = false, name = "page_count", length = 5)
     private Short pageCount;
 
-    @Column(nullable = false, name = "release_date")
-    private Date releaseDate;
+    @Column(name = "release_date")
+    private Timestamp releaseDate;
 
     @Column(name = "hardcover_price")
     private Double hardcoverPrice;

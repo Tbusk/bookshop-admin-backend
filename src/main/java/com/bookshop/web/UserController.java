@@ -4,7 +4,6 @@ import com.bookshop.domain.User;
 import com.bookshop.domain.UserRepository;
 import com.bookshop.util.APIUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +21,7 @@ public class UserController {
     @Autowired
     private APIUtil apiUtil;
 
+    // Get all users
     @GetMapping(value = "/list", produces = "application/json")
     public ResponseEntity<?> getUsers() {
         try {
@@ -32,6 +32,7 @@ public class UserController {
         }
     }
 
+    // Get user by id
     @GetMapping(value = "/{id}", produces = "application/json")
     public ResponseEntity<?> getUser(@PathVariable Long id) {
         try {
@@ -41,6 +42,7 @@ public class UserController {
         }
     }
 
+    // Add user
     @PostMapping(value = "", consumes = "application/json", produces = "application/json")
     public ResponseEntity<String> addUser(@RequestBody Map<String, String> userMap) {
 
@@ -69,6 +71,7 @@ public class UserController {
         return ResponseEntity.ok().body(apiUtil.buildResponse("User added").toString());
     }
 
+    // Update user
     @PutMapping(value = "/{id}", consumes = "application/json", produces = "application/json")
     public ResponseEntity<String> updateUser(@PathVariable Long id, @RequestBody Map<String, String> userMap) {
 
@@ -92,6 +95,7 @@ public class UserController {
         return ResponseEntity.ok().body(apiUtil.buildResponse("User updated").toString());
     }
 
+    // Delete user
     @DeleteMapping(value = "/{id}", produces = "application/json")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
         if(userRepository.findById(id).isEmpty()) {
