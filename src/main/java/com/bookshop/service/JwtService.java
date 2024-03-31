@@ -49,7 +49,7 @@ public class JwtService {
         try {
             String token = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-            if(token != null) {
+            if(token != null && !token.isEmpty() && token.startsWith(PREFIX)) {
                 String user = Jwts.parser()
                         .verifyWith(secretKey)
                         .build()
@@ -61,12 +61,10 @@ public class JwtService {
                 }
             }
         } catch (MalformedJwtException | ExpiredJwtException exception) {
-            exception.printStackTrace();
             System.out.println("Error: " + exception.getMessage());
         } catch (SignatureException signatureException) {
             System.out.println("A key was provided, but could not be verified.");
         }
-
         return null;
     }
 }
