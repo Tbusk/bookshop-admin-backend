@@ -10,3 +10,5 @@ A example admin page for a bookshop for SENG 400.
 - Lombok
 - JWT (jjwt-api, jjwt-impl, jjwt-jackson)
 - Maven
+
+This was a two-part project with the frontend in React. View the frontend here -> https://github.com/Tbusk/bookshop-admin-frontend
