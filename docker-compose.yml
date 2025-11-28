@@ -1,0 +1,13 @@
+name: bookshop
+
+services:
+  mariadb:
+    container_name: mariadb
+    image: mariadb:latest
+    environment:
+      - MARIADB_ROOT_PASSWORD=mySecurePassword!123
+      - MARIADB_DATABASE=bookshop
+    volumes:
+      - ./mariadb-init:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
