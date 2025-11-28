@@ -20,7 +20,7 @@ import java.util.Date;
 @PropertySource("application.properties")
 public class JwtService {
 
-    static final long EXPIRATION_TIME  = 86400000; // 1 Day in ms
+    static final long EXPIRATION_TIME  = 1_000 /*ms->s*/ * 60 /*s->m*/ * 60 /*m->h*/ * 24 /*h->d*/; // 1 day
     static final String PREFIX = "Bearer ";
     private SecretKey secretKey;
 
