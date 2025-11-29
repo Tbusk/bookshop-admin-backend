@@ -59,7 +59,6 @@ public class SecurityConfig {
         config.setAllowedMethods(Arrays.asList("*"));
         config.setAllowedHeaders(Arrays.asList("*"));
         config.setAllowCredentials(false);
-        config.applyPermitDefaultValues();
 
         source.registerCorsConfiguration("/**", config);
 
