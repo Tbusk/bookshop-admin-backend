@@ -1,0 +1,54 @@
+# Note: This file is a replica. This should be placed in the folder above the frontend and backend.
+#
+# Additionally, this setup requires that the backend jar files be built first with mvn clean package and the frontend is built with the
+# REACT_APP_API_URL environment variable set before running npm run build.
+name: bookshop
+
+services:
+  database:
+    container_name: bookshop_mariadb
+    image: mariadb:latest
+    environment:
+      - MARIADB_DATABASE=bookshop
+      - MARIADB_ROOT_PASSWORD_FILE=/run/secrets/mariadb_root_password
+      - MARIADB_USER=bookshop_user
+      - MARIADB_PASSWORD_FILE=/run/secrets/mariadb_password
+    volumes:
+#      uncomment this line to load the initial database schema
+#      - ./bookshop-admin-backend/mariadb-init:/docker-entrypoint-initdb.d
+      - ./mariadb-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    secrets:
+      - mariadb_root_password
+      - mariadb_password
+
+  backend:
+    container_name: bookshop_backend
+    build:
+      context: ./bookshop-admin-backend
+      dockerfile: Dockerfile-dev
+    volumes:
+      - ./bookshop-admin-backend/target:/build
+    ports:
+      - "8080:8080"
+    depends_on:
+      - database
+
+  frontend:
+    container_name: bookshop_frontend
+    build:
+      context: ./bookshop-admin-frontend
+      dockerfile: Dockerfile-dev
+    volumes:
+      - ./bookshop-admin-frontend/build:/build
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+secrets:
+  mariadb_root_password:
+    file: ./secrets/mariadb_root_password.txt
+  mariadb_password:
+    file: ./secrets/mariadb_password.txt
