@@ -1,0 +1,11 @@
+FROM amazoncorretto:21-alpine
+
+ENV ENVIRONMENT="devdocker"
+ENV APP_NAME="Bookshop"
+ENV APP_VERSION="0.0.1"
+
+VOLUME /build
+
+EXPOSE 8080
+
+ENTRYPOINT exec java -Dspring.profiles.active=${ENVIRONMENT} -jar /build/${APP_NAME}-${APP_VERSION}-SNAPSHOT.jar
