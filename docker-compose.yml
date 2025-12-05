@@ -47,6 +47,7 @@ services:
     depends_on:
       - backend
 
+# files must be created and populated before running
 secrets:
   mariadb_root_password:
     file: ./secrets/mariadb_root_password.txt
